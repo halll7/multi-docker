@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t halll7/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run halll7/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t halll7/multi-client ./client 
+  - docker build -t halll7/multi-nginx ./nginx 
+  - docker build -t halll7/multi-server ./server 
+  - docker build -t halll7/multi-worker ./worker
+
+  # log in to docker hub and push images
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push halll7/multi-client 
+  - docker push halll7/multi-nginx 
+  - docker push halll7/multi-server 
+  - docker push halll7/multi-worker
+   
+
